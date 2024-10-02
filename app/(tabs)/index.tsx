@@ -6,6 +6,8 @@ import { ArtProduct } from '@/models/ArtProduct';
 import CardComponent from '@/components/Card';
 import { api } from '@/config/api';
 import Loading from '@/components/loading';
+import { useSelector } from 'react-redux';
+import { toggleFavorite } from '@/redux/features/favoriteSlice';
 
 interface TabOneScreenProps {
   ArtProduct: ArtProduct;

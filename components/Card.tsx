@@ -1,22 +1,31 @@
-import React, { useState } from 'react'
-import { View } from './Themed'
-import { Avatar, Button, Card, Icon, Text } from 'react-native-paper'
+import React, { useEffect, useState } from 'react'
+import { Button, Card, Text } from 'react-native-paper'
 import { ArtProduct } from '@/models/ArtProduct'
-import { Link } from 'expo-router'
 import { StyleSheet } from 'react-native'
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/redux/store'
+import { addToFavorites, toggleFavorite } from '@/redux/features/favoriteSlice'
 
-const LeftContent = props => <Avatar.Icon {...props} icon="" />
 
 interface CardComponentProps {
 	ArtProduct: ArtProduct;
 }
 
 function CardComponent({ ArtProduct }: CardComponentProps) {
-	const [isFavorite, setIsFavorite] = useState(false);
+
+	const dispatch = useDispatch();
+
+	const isFavorite = useSelector((state: RootState) =>
+		state.favoriteList.items.some((item) => item.id === ArtProduct.id)
+	);
+
+	// const handleAddtoFavoriteList = () => {
+	// 	dispatch(addToFavorites(ArtProduct));
+	// }
 
 	const handleFavorite = () => {
-		setIsFavorite(!isFavorite);
+		dispatch(toggleFavorite(ArtProduct));
 	}
 
 	const { artName, brand, image, limitedTimeDeal, price } = ArtProduct;
@@ -31,8 +40,9 @@ function CardComponent({ ArtProduct }: CardComponentProps) {
 				<Text style={styles.price}>{brand}</Text>
 			</Card.Content>
 			<Card.Actions>
-				<Button style={[styles.heartButton, styles.noBorder]} onPress={handleFavorite} labelStyle={styles.heartIcon}>
+				<Button style={[styles.heartButton, styles.noBorder]} onPress={() => { handleFavorite() }} labelStyle={styles.heartIcon} >
 					<MaterialCommunityIcons
+						onPress={() => { handleFavorite() }}
 						name={`${isFavorite ? 'cards-heart' : 'cards-heart-outline'}`}
 						size={21}
 						color={isFavorite ? 'red' : 'gray'} />

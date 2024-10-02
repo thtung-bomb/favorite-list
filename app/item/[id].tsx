@@ -6,14 +6,27 @@ import { useLocalSearchParams, useNavigation } from 'expo-router';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToFavorites, toggleFavorite } from '@/redux/features/favoriteSlice';
+import { RootState } from '@/redux/store';
 
 
 function DetailPage() {
 	const colorScheme = useColorScheme();
-	const [item, setItem] = useState<ArtProduct | null>(null);
+	const [item, setItem] = useState<ArtProduct | null>();
 	const [loading, setLoading] = useState(false);
-	const [isFavorite, setIsFavorite] = useState(false);
+	// const [isFavorite, setIsFavorite] = useState(false);
 	const navigation = useNavigation();
+
+	const dispatch = useDispatch();
+
+	const isFavorite = useSelector((state: RootState) => {
+		return state.favoriteList.items.some((check) => check.id === item?.id);
+	})
+
+	const handleAddtoFavoriteList = () => {
+		dispatch(toggleFavorite(item));
+	}
 
 	const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -47,13 +60,12 @@ function DetailPage() {
 		);
 	}
 
-	const toggleFavorite = async () => {
-		try {
-			setIsFavorite(!isFavorite);
-		} catch (error) {
-			console.log(error);
+	const handleFavorite = () => {
+		if (item) {
+			dispatch(toggleFavorite(item));
 		}
-	};
+	}
+
 
 	if (!item) {
 		return (
@@ -82,7 +94,7 @@ function DetailPage() {
 					name={isFavorite ? 'heart' : 'heart-outline'}
 					size={24}
 					color="red"
-					onPress={toggleFavorite}
+					onPress={() => { handleFavorite() }}
 				/>
 			</View>
 		</ThemeProvider>

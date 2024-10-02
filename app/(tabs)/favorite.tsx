@@ -1,14 +1,37 @@
-import { StyleSheet } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { useEffect } from 'react';
+import { Link } from 'expo-router';
+import CardComponent from '@/components/Card';
 
 export default function TabTwoScreen() {
+
+  const favorite = useSelector((store: RootState) => store.favoriteList.items);
+
+  useEffect(() => {
+    console.log("list favorite", favorite);
+  }, [])
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Favorites List</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/two.tsx" />
+      <FlatList
+        data={favorite}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <Pressable key={item.id}>
+            <Link key={item.id} href={{ pathname: `/item/${item.id}` }}>
+              <View>
+                <CardComponent ArtProduct={item} />
+              </View>
+            </Link>
+          </Pressable>
+        )}
+      />
+
     </View>
   );
 }
