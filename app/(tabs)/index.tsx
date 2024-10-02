@@ -1,17 +1,67 @@
-import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
+import { Dimensions, FlatList, Image, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { Link } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ArtProduct } from '@/models/ArtProduct';
+import CardComponent from '@/components/Card';
+import { api } from '@/config/api';
+import Loading from '@/components/loading';
+
+interface TabOneScreenProps {
+  ArtProduct: ArtProduct;
+}
 
 export default function TabOneScreen() {
+
+  const [products, setProducts] = useState<ArtProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('FavoriteList');
+      const data = response.data;
+      console.log(data);
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, [])
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Loading />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <FlatList
+      data={products}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <Pressable key={item.id}>
+          <Link key={item.id} href={{ pathname: `/item/${item.id}` }}>
+            <View style={styles.width}>
+              <CardComponent ArtProduct={item} />
+            </View>
+          </Link>
+        </Pressable>
+      )}
+      contentContainerStyle={styles.list}
+      numColumns={1}
+    />
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -19,13 +69,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  list: {
+    marginHorizontal: 10,
+    gap: 15
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  width: {
+    width: Dimensions.get('window').width,
+  }
 });
