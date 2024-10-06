@@ -1,12 +1,10 @@
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 import * as React from 'react';
 
 import { View } from '@/components/Themed';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useEffect } from 'react';
 import { Link } from 'expo-router';
-import CardComponent from '@/components/Card';
 import { Text } from 'react-native-paper';
 import CardFavorite from '@/components/CardFavorite';
 
@@ -27,8 +25,10 @@ export default function TabTwoScreen() {
               </View>
             </Link>
           )}
-        /> : <Text style={{ margin: 10, textAlign: 'center' }} variant="titleLarge">
-          Your favorites list is currently empty. Start adding items to your collection!</Text>
+        /> :
+        <Text style={{ margin: 10, textAlign: 'center' }} variant="titleLarge">
+          Your favorites list is currently empty. Start adding items to your collection!
+        </Text>
       }
     </View>
   );

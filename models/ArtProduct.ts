@@ -1,3 +1,5 @@
+import { Comment } from "./Comment";
+
 export interface ArtProduct {
 	id: string;
 	artName: string;
@@ -7,5 +9,6 @@ export interface ArtProduct {
 	image: string;
 	limitedTimeDeal: number;
 	price: number;
+	comments: Comment[];
 }
 

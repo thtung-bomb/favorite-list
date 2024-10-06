@@ -4,19 +4,24 @@ import { ArtProduct } from '@/models/ArtProduct';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, SafeAreaView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Entypo from '@expo/vector-icons/Entypo';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToFavorites, toggleFavorite } from '@/redux/features/favoriteSlice';
+import { toggleFavorite } from '@/redux/features/favoriteSlice';
 import { RootState } from '@/redux/store';
-
+import { matchCommentsToArtProducts } from '@/utils/matchCommentsToArtProducts ';
+import { comments } from '@/models/Comment';
+import { AirbnbRating } from 'react-native-ratings';
+import { Surface } from 'react-native-paper';
 
 function DetailPage() {
 	const colorScheme = useColorScheme();
 	const [item, setItem] = useState<ArtProduct | null>();
 	const [loading, setLoading] = useState(false);
+	const [selectedRating, setSelectedRating] = useState<number | null>(null);
+	const [selected, setSelected] = useState(false);
 	const navigation = useNavigation();
-
 	const dispatch = useDispatch();
 
 	const isFavorite = useSelector((state: RootState) => {
@@ -70,9 +75,35 @@ function DetailPage() {
 		);
 	}
 
+	const updatedArtProducts = matchCommentsToArtProducts([item], comments);
+	const matchedComments = updatedArtProducts[0].comments || [];
+
+	const moveCommentsOwnerToTop = [
+		...matchedComments.filter(comment => comment.user.id === 5),
+		...matchedComments.filter(comment => comment.user.id !== 5),
+	]
+
+	const ratingCounts = (comments) => {
+		const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+		comments.forEach(comment => {
+			if (comment.rating >= 1 && comment.rating <= 5) {
+				counts[comment.rating]++;
+			}
+		});
+
+		return counts;
+	};
+
+	const counts = ratingCounts(matchedComments);
+
+	const handleSelectRating = (rate) => {
+		setSelectedRating(rate === selectedRating ? null : rate);
+	}
+
 	return (
 		<ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
-			<View style={styles.container}>
+			<ScrollView style={styles.container} indicatorStyle='black'>
 				<Text style={styles.header}>{item.artName}</Text>
 				<Image source={{ uri: item.image }} style={styles.image} />
 				<Text style={styles.description}>{item.description}</Text>
@@ -82,15 +113,61 @@ function DetailPage() {
 						<Text style={styles.discount}><Text style={{ textDecorationLine: 'line-through' }}>-${(item.price).toFixed(2)}</Text> (Save {item.limitedTimeDeal * 100}%)</Text>
 					)}
 				</View>
-				<Text style={styles.brand}>Brand: {item.brand}</Text>
-				<Text style={styles.surface}>{item.glassSurface ? 'Suitable for glass surface' : 'Unsuitable for glass surface'}</Text>
-				<MaterialCommunityIcons
-					onPress={() => { handleFavorite() }}
-					name={`${isFavorite ? 'cards-heart' : 'cards-heart-outline'}`}
-					size={30}
-					color={isFavorite ? 'red' : 'gray'} />
-			</View>
-		</ThemeProvider>
+				<View>
+					<View>
+						<Text style={styles.brand}>Brand: {item.brand}</Text>
+						<Text style={styles.surface}>{item.glassSurface ? 'Suitable for glass surface' : 'Unsuitable for glass surface'}</Text>
+					</View>
+					<View style={{ justifyContent: 'center', alignItems: 'center' }} >
+						<MaterialCommunityIcons
+							onPress={() => { handleFavorite() }}
+							name={`${isFavorite ? 'cards-heart' : 'cards-heart-outline'}`}
+							size={60}
+							color={isFavorite ? 'red' : 'gray'} />
+					</View>
+				</View>
+				<View style={{ marginTop: 30 }}>
+					<Text style={{ fontWeight: '700', fontSize: 21, textAlign: 'center' }}>Filter by rating:</Text>
+					<View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+						{[5, 4, 3, 2, 1].map(star => (
+							<Surface
+								key={star}
+								style={[styles.surface, selectedRating === star && styles.surfaceSelected]} // Updated condition
+								elevation={4}
+								onTouchEnd={() => handleSelectRating(star)}
+							>
+								<View>
+									<Text style={{ alignSelf: 'center' }}>{star} <Entypo name='star' size={21} color='#ceda12' /></Text>
+									<Text>({counts[star]})</Text>
+								</View>
+							</Surface>
+						))}
+					</View>
+				</View>
+				<View style={styles.commentsContainer}>
+					<Text style={styles.commentsHeader}>Ratings and Reviews</Text>
+					{moveCommentsOwnerToTop.length === 0 ? (
+						<Text>No comments available for this product.</Text>
+					) : (
+						moveCommentsOwnerToTop
+							.filter(comment => selectedRating ? comment.rating === selectedRating : true)
+							.map((comment, index) => (
+								<View key={index} style={styles.comment}>
+									<Text style={styles.commentUser}>{comment.user.name === 'Thanh Tung' ? `${comment.user.name} (you)` : `${comment.user.name}`}:</Text>
+									<Text>{comment.feedback.join(' ')}</Text>
+									<AirbnbRating
+										isDisabled={comment.user.id !== 5}
+										count={5}
+										defaultRating={comment.rating}
+										size={10}
+									/>
+								</View>
+							))
+					)}
+				</View>
+			</ScrollView>
+
+		</ThemeProvider >
 	);
 }
 
@@ -99,7 +176,7 @@ export default DetailPage;
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 16,
+		paddingHorizontal: 10,
 		backgroundColor: '#fff',
 	},
 	loadingContainer: {
@@ -163,5 +240,31 @@ const styles = StyleSheet.create({
 	favoriteIcon: {
 		alignSelf: 'flex-end',
 		marginBottom: 8,
+	},
+	commentsContainer: {
+		marginTop: 20,
+	},
+	commentsHeader: {
+		fontSize: 18,
+		fontWeight: 'bold',
+		marginBottom: 10,
+	},
+	comment: {
+		display: 'flex',
+		justifyContent: 'flex-start',
+		marginBottom: 30,
+	},
+	commentUser: {
+		fontWeight: 'bold',
+	},
+	surface: {
+		height: 80,
+		width: 80,
+		gap: 10,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	surfaceSelected: {
+		backgroundColor: '#8f93a9'
 	},
 });

@@ -34,11 +34,6 @@ function ModalComponent({ bodyMessage, visible, onHideModal, ArtProduct }: Modal
 		return { color: 'black' };
 	}
 
-	useEffect(() => {
-		toggleColor();
-		console.log(toggleColor());
-	}, [bodyMessage])
-
 	return (
 		<>
 			<View style={styles.container}>
