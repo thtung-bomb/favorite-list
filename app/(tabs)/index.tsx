@@ -8,6 +8,8 @@ import { api } from '@/config/api';
 import Loading from '@/components/loading';
 import { useSelector } from 'react-redux';
 import { toggleFavorite } from '@/redux/features/favoriteSlice';
+import Filter from '@/components/chip';
+import { brands } from '@/models/Brand';
 
 interface TabOneScreenProps {
   ArtProduct: ArtProduct;
@@ -17,6 +19,19 @@ export default function TabOneScreen() {
 
   const [products, setProducts] = useState<ArtProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+
+  const filterBrandArt = selectedBrands.length > 0 ? products.filter((product) => selectedBrands.includes(product.brand)) : products
+
+  const toggleBrandSelection = (brand: string) => {
+    setSelectedBrands((prevSelectedBrands) => {
+      if (prevSelectedBrands.includes(brand)) {
+        return prevSelectedBrands.filter((b) => b !== brand);
+      } else {
+        return [...prevSelectedBrands, brand];
+      }
+    });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -45,21 +60,41 @@ export default function TabOneScreen() {
   }
 
   return (
-    <FlatList
-      data={products}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => (
-        <Pressable key={item.id}>
-          <Link key={item.id} href={{ pathname: `/item/${item.id}` }}>
-            <View style={styles.width}>
-              <CardComponent ArtProduct={item} />
-            </View>
-          </Link>
-        </Pressable>
-      )}
-      contentContainerStyle={styles.list}
-      numColumns={1}
-    />
+    <>
+      <FlatList
+        data={brands}
+        renderItem={({ item }) => (
+          <Pressable onPress={() => toggleBrandSelection(item.name)}>
+            <Filter
+              icon=""
+              label={item.name}
+              isSelected={selectedBrands.includes(item.name)}
+            />
+          </Pressable>
+        )}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterList}
+        numColumns={1}
+      />
+
+      <FlatList
+        data={filterBrandArt}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <Pressable key={item.id}>
+            <Link key={item.id} href={{ pathname: `/item/${item.id}` }}>
+              <View style={styles.width}>
+                <CardComponent ArtProduct={item} />
+              </View>
+            </Link>
+          </Pressable>
+        )}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        numColumns={1}
+      />
+    </>
   );
 }
 
@@ -77,5 +112,17 @@ const styles = StyleSheet.create({
   },
   width: {
     width: Dimensions.get('window').width,
+  },
+  filterList: {
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    backgroundColor: '#f5f5f5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    flexGrow: 0,
   }
 });
