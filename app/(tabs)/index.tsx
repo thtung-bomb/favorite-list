@@ -6,22 +6,26 @@ import { ArtProduct } from '@/models/ArtProduct';
 import CardComponent from '@/components/Card';
 import { api } from '@/config/api';
 import Loading from '@/components/loading';
-import { useSelector } from 'react-redux';
-import { toggleFavorite } from '@/redux/features/favoriteSlice';
 import Filter from '@/components/chip';
 import { brands } from '@/models/Brand';
-
-interface TabOneScreenProps {
-  ArtProduct: ArtProduct;
-}
+import SearchBarComponent from '@/components/search';
 
 export default function TabOneScreen() {
 
   const [products, setProducts] = useState<ArtProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const filterBrandArt = selectedBrands.length > 0 ? products.filter((product) => selectedBrands.includes(product.brand)) : products
+  const filterBrandArt = selectedBrands.length > 0
+    ? products.filter(
+      (product) =>
+        selectedBrands.includes(product.brand) &&
+        product.artName.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    : products.filter((product) =>
+      product.artName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const toggleBrandSelection = (brand: string) => {
     setSelectedBrands((prevSelectedBrands) => {
@@ -61,6 +65,9 @@ export default function TabOneScreen() {
 
   return (
     <>
+      <View style={styles.searchBar}>
+        <SearchBarComponent onSearch={setSearchQuery} />
+      </View>
       <FlatList
         data={brands}
         renderItem={({ item }) => (
@@ -77,7 +84,6 @@ export default function TabOneScreen() {
         contentContainerStyle={styles.filterList}
         numColumns={1}
       />
-
       <FlatList
         data={filterBrandArt}
         keyExtractor={(item) => item.id.toString()}
@@ -98,8 +104,6 @@ export default function TabOneScreen() {
   );
 }
 
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -107,22 +111,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   list: {
-    marginHorizontal: 10,
+    marginHorizontal: 'auto',
     gap: 15
   },
   width: {
     width: Dimensions.get('window').width,
   },
   filterList: {
-    paddingHorizontal: 10,
-    paddingVertical: 20,
+    display: 'flex',
+    margin: 'auto',
+    marginBottom: 20,
+    justifyContent: 'center',
     backgroundColor: '#f5f5f5',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     gap: 10,
     alignItems: 'center',
-    justifyContent: 'flex-start',
     flexDirection: 'row',
     flexGrow: 0,
+  },
+  searchBar: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: '#f5f5f5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
   }
 });

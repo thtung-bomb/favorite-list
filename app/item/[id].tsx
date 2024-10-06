@@ -5,7 +5,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToFavorites, toggleFavorite } from '@/redux/features/favoriteSlice';
 import { RootState } from '@/redux/store';
@@ -15,7 +15,6 @@ function DetailPage() {
 	const colorScheme = useColorScheme();
 	const [item, setItem] = useState<ArtProduct | null>();
 	const [loading, setLoading] = useState(false);
-	// const [isFavorite, setIsFavorite] = useState(false);
 	const navigation = useNavigation();
 
 	const dispatch = useDispatch();
@@ -23,10 +22,6 @@ function DetailPage() {
 	const isFavorite = useSelector((state: RootState) => {
 		return state.favoriteList.items.some((check) => check.id === item?.id);
 	})
-
-	const handleAddtoFavoriteList = () => {
-		dispatch(toggleFavorite(item));
-	}
 
 	const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -48,7 +43,7 @@ function DetailPage() {
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			title: item ? item.id : 'Loading...', // Set the header title
+			title: item ? item.artName : 'Loading...',
 		});
 	}, [navigation, item]);
 
@@ -76,26 +71,24 @@ function DetailPage() {
 	}
 
 	return (
-		<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+		<ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
 			<View style={styles.container}>
 				<Text style={styles.header}>{item.artName}</Text>
 				<Image source={{ uri: item.image }} style={styles.image} />
 				<Text style={styles.description}>{item.description}</Text>
 				<View style={styles.priceContainer}>
-					<Text style={styles.price}>${item.price}</Text>
+					<Text style={styles.price}>${(item.price * (1 - item.limitedTimeDeal)).toFixed(2)}</Text>
 					{item.limitedTimeDeal > 0 && (
-						<Text style={styles.discount}>-${(item.price).toFixed(2)} (Save {item.limitedTimeDeal * 100}%)</Text>
+						<Text style={styles.discount}><Text style={{ textDecorationLine: 'line-through' }}>-${(item.price).toFixed(2)}</Text> (Save {item.limitedTimeDeal * 100}%)</Text>
 					)}
 				</View>
 				<Text style={styles.brand}>Brand: {item.brand}</Text>
 				<Text style={styles.surface}>{item.glassSurface ? 'Suitable for glass surface' : 'Unsuitable for glass surface'}</Text>
-				<Ionicons
-					style={styles.favoriteIcon}
-					name={isFavorite ? 'heart' : 'heart-outline'}
-					size={24}
-					color="red"
+				<MaterialCommunityIcons
 					onPress={() => { handleFavorite() }}
-				/>
+					name={`${isFavorite ? 'cards-heart' : 'cards-heart-outline'}`}
+					size={30}
+					color={isFavorite ? 'red' : 'gray'} />
 			</View>
 		</ThemeProvider>
 	);
@@ -142,10 +135,11 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: 'bold',
 		marginRight: 8,
+		color: 'red',
 	},
 	discount: {
-		fontSize: 14,
-		color: 'red',
+		fontSize: 15,
+		color: 'gray',
 	},
 	brand: {
 		fontSize: 16,

@@ -5,7 +5,7 @@ import { StyleSheet } from 'react-native'
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
-import { addToFavorites, toggleFavorite } from '@/redux/features/favoriteSlice'
+import { toggleFavorite } from '@/redux/features/favoriteSlice'
 
 
 interface CardComponentProps {
@@ -20,9 +20,6 @@ function CardComponent({ ArtProduct }: CardComponentProps) {
 		state.favoriteList.items.some((item) => item.id === ArtProduct.id)
 	);
 
-	// const handleAddtoFavoriteList = () => {
-	// 	dispatch(addToFavorites(ArtProduct));
-	// }
 
 	const handleFavorite = () => {
 		dispatch(toggleFavorite(ArtProduct));
@@ -35,18 +32,16 @@ function CardComponent({ ArtProduct }: CardComponentProps) {
 			<Card.Cover source={{ uri: `${image}` }} style={styles.cover} />
 			<Card.Title title={artName} />
 			<Card.Content>
-				<Text style={styles.price}>$ {price}</Text>
-				<Text style={styles.deal}>time deal: <Text>{limitedTimeDeal}</Text></Text>
+				<Text style={styles.price}>$ {(price * (1 - limitedTimeDeal)).toFixed(2)}</Text>
+				<Text style={styles.deal}>{limitedTimeDeal > 0 ? `-${limitedTimeDeal * 100}%` : ''}</Text>
 				<Text style={styles.price}>{brand}</Text>
 			</Card.Content>
 			<Card.Actions>
-				<Button style={[styles.heartButton, styles.noBorder]} onPress={() => { handleFavorite() }} labelStyle={styles.heartIcon} >
-					<MaterialCommunityIcons
-						onPress={() => { handleFavorite() }}
-						name={`${isFavorite ? 'cards-heart' : 'cards-heart-outline'}`}
-						size={21}
-						color={isFavorite ? 'red' : 'gray'} />
-				</Button>
+				<MaterialCommunityIcons
+					onPress={() => { handleFavorite() }}
+					name={`${isFavorite ? 'cards-heart' : 'cards-heart-outline'}`}
+					size={30}
+					color={isFavorite ? 'red' : 'gray'} />
 			</Card.Actions>
 		</Card>
 	)

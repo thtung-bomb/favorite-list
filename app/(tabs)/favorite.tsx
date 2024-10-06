@@ -1,37 +1,35 @@
 import { FlatList, Pressable, StyleSheet } from 'react-native';
+import * as React from 'react';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { View } from '@/components/Themed';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { Link } from 'expo-router';
 import CardComponent from '@/components/Card';
+import { Text } from 'react-native-paper';
+import CardFavorite from '@/components/CardFavorite';
+
 
 export default function TabTwoScreen() {
 
   const favorite = useSelector((store: RootState) => store.favoriteList.items);
-
-  useEffect(() => {
-    console.log("list favorite", favorite);
-  }, [])
-
   return (
     <View style={styles.container}>
-      <FlatList
-        data={favorite}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Pressable key={item.id}>
+      {favorite.length > 0 ?
+        <FlatList
+          data={favorite}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
             <Link key={item.id} href={{ pathname: `/item/${item.id}` }}>
               <View>
-                <CardComponent ArtProduct={item} />
+                <CardFavorite key={item.id} ArtProduct={item} id={item.id} />
               </View>
             </Link>
-          </Pressable>
-        )}
-      />
-
+          )}
+        /> : <Text style={{ margin: 10, textAlign: 'center' }} variant="titleLarge">
+          Your favorites list is currently empty. Start adding items to your collection!</Text>
+      }
     </View>
   );
 }
