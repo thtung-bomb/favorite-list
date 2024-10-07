@@ -86,7 +86,7 @@ function DetailPage() {
 	const ratingCounts = (comments) => {
 		const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-		comments.forEach(comment => {
+		comments.foreach(comment => {
 			if (comment.rating >= 1 && comment.rating <= 5) {
 				counts[comment.rating]++;
 			}
@@ -132,7 +132,7 @@ function DetailPage() {
 						{[5, 4, 3, 2, 1].map(star => (
 							<Surface
 								key={star}
-								style={[styles.surface, selectedRating === star && styles.surfaceSelected]} // Updated condition
+								style={[styles.surfaces, selectedRating === star && styles.surfaceSelected]} // Updated condition
 								elevation={4}
 								onTouchEnd={() => handleSelectRating(star)}
 							>
@@ -153,8 +153,8 @@ function DetailPage() {
 							.filter(comment => selectedRating ? comment.rating === selectedRating : true)
 							.map((comment, index) => (
 								<View key={index} style={styles.comment}>
-									<Text style={styles.commentUser}>{comment.user.name === 'Thanh Tung' ? `${comment.user.name} (you)` : `${comment.user.name}`}:</Text>
-									<Text>{comment.feedback.join(' ')}</Text>
+									<Text style={styles.commentUser}>@{comment.user.name === 'Thanh Tung' ? `${comment.user.name} (you)` : `${comment.user.name}`}:</Text>
+									<Text style={{ fontSize: 21 }}>{comment.feedback.join(' ')}</Text>
 									<AirbnbRating
 										isDisabled={comment.user.id !== 5}
 										count={5}
@@ -256,8 +256,9 @@ const styles = StyleSheet.create({
 	},
 	commentUser: {
 		fontWeight: 'bold',
+		color: '#999999'
 	},
-	surface: {
+	surfaces: {
 		height: 80,
 		width: 80,
 		gap: 10,
