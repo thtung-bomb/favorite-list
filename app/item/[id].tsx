@@ -83,10 +83,10 @@ function DetailPage() {
 		...matchedComments.filter(comment => comment.user.id !== 5),
 	]
 
-	const ratingCounts = (comments) => {
+	const ratingCounts = (comments: any[]) => {
 		const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-		comments.foreach(comment => {
+		comments.forEach(comment => {
 			if (comment.rating >= 1 && comment.rating <= 5) {
 				counts[comment.rating]++;
 			}
@@ -149,6 +149,7 @@ function DetailPage() {
 					{moveCommentsOwnerToTop.length === 0 ? (
 						<Text>No comments available for this product.</Text>
 					) : (
+
 						moveCommentsOwnerToTop
 							.filter(comment => selectedRating ? comment.rating === selectedRating : true)
 							.map((comment, index) => (

@@ -9,16 +9,12 @@ import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 interface CardFavoriteProps {
 	id: string;
 	ArtProduct: ArtProduct;
+	setToggleCheckbox: (id: string) => void;
 }
 
-function CardFavorite({ ArtProduct, id }: CardFavoriteProps) {
+function CardFavorite({ ArtProduct, id, setToggleCheckbox }: CardFavoriteProps) {
 	const [visible, setVisible] = useState(false);
-	const navigation = useNavigation();
 	const router = useRouter();
-
-	const handleShowModal = () => {
-		setVisible(true);
-	};
 
 	const handleHideModal = () => {
 		setVisible(false);
@@ -30,7 +26,7 @@ function CardFavorite({ ArtProduct, id }: CardFavoriteProps) {
 		<>
 			<Card style={styles.card} onPress={() => router.push({
 				pathname: `/item/${id}`
-			})} onLongPress={handleShowModal}>
+			})} onLongPress={() => setToggleCheckbox(id)}>
 				<Card.Title
 					title={artName}
 					subtitle={description}
